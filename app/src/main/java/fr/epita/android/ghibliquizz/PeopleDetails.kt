@@ -1,5 +1,6 @@
 package fr.epita.android.ghibliquizz
 
+import android.graphics.Color
 import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
 import android.util.Log
@@ -25,12 +26,17 @@ class PeopleDetails : AppCompatActivity() {
         val baseUrl = originIntent.getStringExtra("FILM_BASE_URL")
         val filmId = originIntent.getStringExtra("FILM_ID")
         val correctValue = originIntent.getBooleanExtra("CORRECT", false)
+        val peopleName = originIntent.getStringExtra("CHARACTER_NAME")
 
         if (correctValue) {
             correct.text = "RIGHT!"
+            correct.setTextColor(Color.GREEN)
         } else {
             correct.text = "WRONG!"
+            correct.setTextColor(Color.RED)
         }
+
+        charactersView.text = peopleName
 
         // set the caller service
         val jsonConverter = GsonConverterFactory.create(GsonBuilder().create())

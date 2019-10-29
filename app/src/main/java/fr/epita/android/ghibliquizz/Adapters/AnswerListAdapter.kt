@@ -63,6 +63,6 @@ class AnswerListAdapter(
 
 
 
-        holder.itemView.tag = currentItem.id
+        holder.itemView.tag = currentItem.name
     }
 }

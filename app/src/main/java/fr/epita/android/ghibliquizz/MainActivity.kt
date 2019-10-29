@@ -38,32 +38,29 @@ class MainActivity : AppCompatActivity() {
         return url.substring("https://ghibliapi.herokuapp.com/films/".length)
     }
 
-    private fun checkIfCorrectPeople(filmId: String): Boolean {
-        for (f in goodPeople.films) {
-            if (getFilmIdFromUrl(f) == filmId) {
-                return true
-            }
-        }
-        return false
+    private fun checkIfCorrectPeople(peopleName: String): Boolean {
+        return peopleName == goodPeople.name
     }
 
-
-    private fun goToDetails(filmId: String, peopleId: String) {
+    // intent to go to the film detail activity
+    private fun goToDetails(peopleName: String) {
         val explicitIntent = Intent(this, PeopleDetails::class.java)
 
-        explicitIntent.putExtra("FILM_ID", filmId)
-        explicitIntent.putExtra("CORRECT", checkIfCorrectPeople(filmId))
+        explicitIntent.putExtra("FILM_ID", chosenFilm.id)
+        explicitIntent.putExtra("CHARACTER_NAME", peopleName)
+        explicitIntent.putExtra("CORRECT", checkIfCorrectPeople(peopleName))
         explicitIntent.putExtra("FILM_BASE_URL", this.baseUrl)
 
         startActivity(explicitIntent)
     }
 
+    // set the recycler view
     fun initListWithAnswers(answsers: ArrayList<PeopleObject>) {
         val itemClickListener = View.OnClickListener {
-            val peopleId = it.tag as String
-            Log.d("TEST", "clicked on row $peopleId")
+            val peopleName = it.tag as String
+            Log.d("TEST", "clicked on row $peopleName")
 
-            goToDetails(this.chosenFilm.id, peopleId)
+            goToDetails(peopleName)
         }
 
         answersView.addItemDecoration(DividerItemDecoration(applicationContext, DividerItemDecoration.VERTICAL))
@@ -73,6 +70,7 @@ class MainActivity : AppCompatActivity() {
         answersView.adapter = AnswerListAdapter(this, answsers, itemClickListener)
     }
 
+    // get the answers from the peopleList
     fun getAnswers(peopleList: ArrayList<PeopleObject>): ArrayList<PeopleObject> {
         val answers: ArrayList<PeopleObject> = arrayListOf()
 
@@ -82,6 +80,7 @@ class MainActivity : AppCompatActivity() {
         return answers
     }
 
+    // chose the film from the list
     fun getChosenFilmId(answers: ArrayList<PeopleObject>): String {
         val r = Random().nextInt(answers.size)
         val goodAnswer = answers[r].films[0]
