@@ -50,8 +50,8 @@ class PeopleDetails : AppCompatActivity() {
         // set the callback for getting the chosen film
         val callbackFilm = object : Callback<FilmObject> {
             override fun onFailure(call: Call<FilmObject>, t: Throwable) {
-                Log.d("HTTP_ERROR", "failed to get the film")
-                Log.d("HTTP_ERROR", t.message)
+                Log.d("APP", "failed to get the film")
+                Log.d("APP", t.message)
             }
 
             override fun onResponse(call: Call<FilmObject>, response: Response<FilmObject>) {
@@ -67,12 +67,12 @@ class PeopleDetails : AppCompatActivity() {
 
 
 
-                        Log.d("HTTP_SUCCESS", "retrieved the film")
+                        Log.d("APP", "retrieved the film")
                     } else {
-                        Log.d("HTTP_ERROR", "empty response")
+                        Log.d("APP", "empty response")
                     }
                 } else {
-                    Log.d("HTTP_ERROR", "bad response code received: $rCode")
+                    Log.d("APP", "bad response code received: $rCode")
                 }
             }
         }

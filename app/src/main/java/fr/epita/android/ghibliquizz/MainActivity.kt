@@ -47,7 +47,7 @@ class MainActivity : AppCompatActivity() {
         val explicitIntent = Intent(this, PeopleDetails::class.java)
 
         explicitIntent.putExtra("FILM_ID", chosenFilm.id)
-        explicitIntent.putExtra("CHARACTER_NAME", peopleName)
+        explicitIntent.putExtra("CHARACTER_NAME", goodPeople.name)
         explicitIntent.putExtra("CORRECT", checkIfCorrectPeople(peopleName))
         explicitIntent.putExtra("FILM_BASE_URL", this.baseUrl)
 
@@ -71,20 +71,36 @@ class MainActivity : AppCompatActivity() {
     }
 
     // get the answers from the peopleList
-    fun getAnswers(peopleList: ArrayList<PeopleObject>): ArrayList<PeopleObject> {
+    fun getAnswers(peopleList: ArrayList<PeopleObject>, chosenFilmId: String): ArrayList<PeopleObject> {
         val answers: ArrayList<PeopleObject> = arrayListOf()
 
-        for (i in 0..4) {
-            answers.add(peopleList[i])
+        var foundGoodCharacter = false
+        for (p in peopleList) {
+            // already found one, now need to add non compliants ones
+            if (foundGoodCharacter) {
+                if (! p.films.contains("https://ghibliapi.herokuapp.com/films/$chosenFilmId") && answers.size < 6) {
+                    answers.add(p)
+                }
+            } else {
+                // not found yet
+                if (p.films.contains("https://ghibliapi.herokuapp.com/films/$chosenFilmId") && answers.size < 6) {
+                    answers.add(p)
+                    foundGoodCharacter = true
+                }
+
+            }
         }
+        answers.forEach { Log.d("APP", it.name) }
+
         return answers
     }
 
     // chose the film from the list
-    fun getChosenFilmId(answers: ArrayList<PeopleObject>): String {
-        val r = Random().nextInt(answers.size)
-        val goodAnswer = answers[r].films[0]
-        goodPeople = answers[r]
+    fun getChosenFilmId(peopleList: ArrayList<PeopleObject>): String {
+        val r = Random().nextInt(peopleList.size)
+        val goodAnswer = peopleList[r].films[0]
+        goodPeople = peopleList[r]
+        Log.d("APP", "set the good character as ${goodPeople.name}")
         return getFilmIdFromUrl(goodAnswer)
     }
 
@@ -106,8 +122,8 @@ class MainActivity : AppCompatActivity() {
         // set the callback for getting the chosen film
         val callbackFilm = object : Callback<FilmObject> {
             override fun onFailure(call: Call<FilmObject>, t: Throwable) {
-                Log.d("HTTP_ERROR", "failed to get the film")
-                Log.d("HTTP_ERROR", t.message)
+                Log.d("APP", "failed to get the film")
+                Log.d("APP", t.message)
             }
 
             override fun onResponse(call: Call<FilmObject>, response: Response<FilmObject>) {
@@ -116,18 +132,15 @@ class MainActivity : AppCompatActivity() {
                     if (response.body() != null) {
                         chosenFilm = response.body()!!
 
-
                         // set the film in the question
                         question.text = "Which one of these characters can be found in the movie ${chosenFilm.title} ?"
 
-
-
-                        Log.d("HTTP_SUCCESS", "retrieved the film")
+                        Log.d("APP", "retrieved the film")
                     } else {
-                        Log.d("HTTP_ERROR", "empty response")
+                        Log.d("APP", "empty response")
                     }
                 } else {
-                    Log.d("HTTP_ERROR", "bad response code received: $rCode")
+                    Log.d("APP", "bad response code received: $rCode")
                 }
             }
         }
@@ -135,8 +148,8 @@ class MainActivity : AppCompatActivity() {
         // set the callback for setting up the people
         val callbackPeople = object : Callback<ArrayList<PeopleObject>> {
             override fun onFailure(call: Call<ArrayList<PeopleObject>>, t: Throwable) {
-                Log.d("HTTP_ERROR", "failed to list the people")
-                Log.d("HTTP_ERROR", t.message)
+                Log.d("APP", "failed to list the people")
+                Log.d("APP", t.message)
             }
 
             override fun onResponse(
@@ -147,31 +160,32 @@ class MainActivity : AppCompatActivity() {
                 if (rCode == 200) {
                     if (response.body() != null) {
                         val peopleList = response.body()!!
-                        Log.d("HTTP_SUCCESS", "retrieved people list")
+                        Log.d("APP", "retrieved people list")
 
-                        val answers: ArrayList<PeopleObject> = getAnswers(peopleList)
+                        val chosenFilmId: String = getChosenFilmId(peopleList)
+
+                        val answers: ArrayList<PeopleObject> = getAnswers(peopleList, chosenFilmId)
 
                         initListWithAnswers(answers)
 
-                        val chosenFilmId: String = getChosenFilmId(answers)
-                        Log.d("HTTP_SUCCESS", "chosen film $chosenFilmId")
+                        Log.d("APP", "chosen film $chosenFilmId")
 
                         // requests the film of the chosen people
-                        Log.d("HTTP_SUCCESS", "requesting the film...")
+                        Log.d("APP", "requesting the film...")
                         service.getFilmDetail(chosenFilmId).enqueue(callbackFilm)
 
 
                     } else {
-                        Log.d("HTTP_ERROR", "empty response")
+                        Log.d("APP", "empty response")
                     }
                 } else {
-                    Log.d("HTTP_ERROR", "bad response code received: $rCode")
+                    Log.d("APP", "bad response code received: $rCode")
                 }
             }
         }
 
         // request people and select the possible answers
-        Log.d("HTTP", "requesting people...")
+        Log.d("APP", "requesting people...")
         service.listPeople().enqueue(callbackPeople)
     }
 }
