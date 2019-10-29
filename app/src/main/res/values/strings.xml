@@ -1,3 +1,7 @@
 <resources>
     <string name="app_name">GhibliQuizz</string>
+    <string name="TheQuiz">The QUIZ</string>
+    <string name="logoDescription">Logo</string>
+    <string name="main_question">Which one of these characters can be found in the movie __movie__ ?</string>
+    <string name="init">initializing...</string>
 </resources>
